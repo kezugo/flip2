@@ -1,0 +1,66 @@
+version: '3.7'
+
+services:
+
+  messaging:
+    container_name: messaging
+    build:
+      context: .
+      dockerfile: docker/rabbitmq/Dockerfile
+    networks:
+      - flip
+    ports:
+      - 15672:15672
+
+  api:
+    container_name: api
+    tty: true
+    depends_on:
+      - messaging
+    ports:
+      - 3000:3000
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    volumes:
+      - .:/app
+    networks:
+      - flip
+    env_file:
+      - .env
+
+  posts:
+    container_name: posts
+    tty: true
+    depends_on:
+      - messaging
+      - api
+    build:
+      context: .
+      dockerfile: docker/posts/Dockerfile
+    volumes:
+      - .:/app
+    networks:
+      - flip
+    env_file:
+      - .env
+
+  users:
+    container_name: users
+    tty: true
+    depends_on:
+      - messaging
+      - api
+    build:
+      context: .
+      dockerfile: docker/users/Dockerfile
+    volumes:
+      - .:/app
+    networks:
+      - flip
+    env_file:
+      - .env
+
+networks:
+  flip:
+    driver: "bridge"
